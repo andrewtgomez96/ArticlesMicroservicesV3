@@ -110,28 +110,30 @@ def editArticle(articleId):
         return jsonify('Unauthorized response'), 401
 
 #4  delete and existing article
-@app.route("/article/<int:articleId>", methods=['DELETE']) #allow both GET and POST requests
+@app.route("/article/<string:articleId>", methods=['DELETE'])
 def deleteArticle(articleId):
-    cur = db.connection.cursor()
+    session = cassandra.connect()
+    session.set_keyspace("db")
+    articleId = uuid.UUID(articleId)
     if (request.authorization):
         username = request.authorization.username
         password = request.authorization.password
+        #check if articleId exists in DB
+        createdArt = session.execute("SELECT createdArt FROM Blog WHERE articleId = %s ", (articleId,))
+        authorArt = session.execute("SELECT username FROM Blog WHERE articleId = %s ", (articleId,))
+        if(createdArt and authorArt):
+            createdArt = createdArt[0].createdart
+            authorArt = authorArt[0].username
+            if(authorArt == username):
+                #Delete article
+                session.execute("DELETE FROM Blog WHERE username = %s AND createdArt = %s", (username,createdArt))
+                return jsonify({'Successfully deleted article' : articleId}), 200
+            else:
+                return jsonify('You are not authorized to edit this article'), 401
+        else:
+            return jsonify('articleId was not found'), 404
     else:
         return ('Unauthorized response'), 401
-    #check if articleId exists in DB
-    #authenticate
-    if(checkAuth(username, password) == True):
-        cur.execute("SELECT title, body FROM Article WHERE artId = ? ", (articleId,))
-        returnObject = cur.fetchone()
-        if(returnObject):
-            #Delete article
-            cur.execute("DELETE FROM article WHERE artID = ?", (articleId,))
-            db.connection.commit()
-            return jsonify({'Successfully deleted article' : articleId}), 200
-        else:
-            jsonify('Article Not found'), 404
-    else:
-        return jsonify('Credentials not found'), 409
 
 #5 retrieve contents of n most recent articles
 @app.route("/articles/<int:n>", methods=['GET'])
@@ -156,12 +158,13 @@ def getMetaArticles(n):
     session = cassandra.connect()
     session.set_keyspace("db")
     #Retrieve n most recent articles
-    r = session.execute("SELECT title, body, username, createdArt FROM Blog LIMIT %s", (n,))
+    r = session.execute("SELECT title, body, username, createdArt, articleId FROM Blog LIMIT %s", (n,))
     jsonR = []
     i = 0
     for row in r:
         print(row)
         jsonR.append({
+            'articleId': row.articleid,
             'title': row.title,
             'body': row.body,
             'username': row.username,

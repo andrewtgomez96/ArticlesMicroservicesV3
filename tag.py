@@ -69,7 +69,7 @@ def addTag(articleId, tag):
             authorArt = authorArt[0].username
             if(username == authorArt):
                 insertTag = (tag, authorArt, createdArt)
-                    #cant update on just the secondary index so have to supply primary index of username/author
+                    #cant update on just the secondary index so have to supply primary index of username/author and createdArt
                 session.execute('''UPDATE Blog SET tags = tags + {%s} WHERE username = %s AND createdArt = %s''', insertTag)
                 r = session.execute("SELECT json tags FROM Blog WHERE articleId = %s", (articleId,))
                 jsonR = r[0].json

@@ -90,7 +90,7 @@ def deleteUser():
     else:
         return jsonify('Credentials not found'), 409
 
-#3 change existing user's password...attempt to upsert instead of update
+#3 change existing user's password upsert instead of update
 @app.route("/user/edit", methods=['PATCH'])
 def editUser():
     session = cassandra.connect()
@@ -105,7 +105,6 @@ def editUser():
     if(checkAuth(username, password) == True):
         #set new password
         pw_hash = bcrypt.generate_password_hash(newPassword).decode('utf-8')
-        #session.execute("UPDATE User SET password = %s WHERE username = %s", (pw_hash, username))
         insertUser = (username, pw_hash)
         session.execute("INSERT INTO User (username, password) VALUES (%s, %s)", insertUser)
         return jsonify('Successfully updated user password'), 200
