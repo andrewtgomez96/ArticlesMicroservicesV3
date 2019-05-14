@@ -63,6 +63,11 @@ def getArticle(articleId):
     articleId = uuid.UUID(articleId)
     #check if articleId exists in DB
     r = session.execute("SELECT json * FROM Blog WHERE articleId = %s ", (articleId,))
+
+    #Create header for last modified
+    response = flask.Response(returnObject["modified"], 304)
+    respnose.headers["If-Modigied-Since"]
+
     if(r):
         jsonR = r[0].json
         article = json.loads(jsonR)
@@ -150,6 +155,11 @@ def getArticles(n):
             'body': row.body
         })
         i=i+1
+
+    #Create header for last modified
+    response = flask.Response(returnObject["modified"], 304)
+    respnose.headers["If-Modified-Since"]
+
     return jsonify(jsonR), 200
 
 #6 retrieve meta data of n most recent articles
@@ -171,6 +181,11 @@ def getMetaArticles(n):
             'createdArt': row.createdart
         })
         i=i+1
+
+    #Create header for last modified
+    response = flask.Response(returnObject["modified"], 304)
+    respnose.headers["If-Modified-Since"]
+
     return jsonify(jsonR), 200
 
 

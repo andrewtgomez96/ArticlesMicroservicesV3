@@ -109,6 +109,11 @@ def getNumOfComments(articleId):
     articleId = uuid.UUID(articleId)
     createdArt = session.execute("SELECT createdArt FROM Blog WHERE articleId = %s ", (articleId,))
     authorArt = session.execute("SELECT username FROM Blog WHERE articleId = %s ", (articleId,))
+
+    #Create header for last modified
+    response = flask.Response(returnObject["created"], 304)
+    respnose.headers["If-Modified-Since"]
+
     if(createdArt and authorArt):
         createdArt = createdArt[0].createdart
         authorArt = authorArt[0].username
@@ -129,6 +134,11 @@ def getNComments(articleId, n):
     articleId = uuid.UUID(articleId)
     createdArt = session.execute("SELECT createdArt FROM Blog WHERE articleId = %s ", (articleId,))
     authorArt = session.execute("SELECT username FROM Blog WHERE articleId = %s ", (articleId,))
+
+    #Create header for last modified
+    response = flask.Response(returnObject["created"], 304)
+    respnose.headers["If-Modified-Since"]
+
     if(createdArt and authorArt):
         createdArt = createdArt[0].createdart
         authorArt = authorArt[0].username
